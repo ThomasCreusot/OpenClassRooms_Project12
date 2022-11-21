@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'EpicEvents_CustomerRelationshipManagement_project.wsgi.appli
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'EpicEvent_CRM_DataBase',
+        'USER': 'thcre',
+        'PASSWORD': 'project12',
+        #'HOST': '127.0.0.1',
+        #'PORT': '5432',
     }
 }
 
