@@ -43,7 +43,7 @@ class ContractViewset(ModelViewSet):
         
         contractClientLastName = self.request.GET.get('lastName') 
         contractClientEmail = self.request.GET.get('email') 
-        contractDate = self.request.GET.get('date') 
+        contractCreationDate = self.request.GET.get('creationDate') 
         contractAmount = self.request.GET.get('amount') 
 
         if contractClientLastName is not None:
@@ -57,6 +57,9 @@ class ContractViewset(ModelViewSet):
             contractQueryset = contractQueryset.filter(
                 Q(client__in=clientQueryset)
             )
+
+        if contractCreationDate is not None:
+            contractQueryset = contractQueryset.filter(dateCreated=contractCreationDate)
 
         return contractQueryset
 
