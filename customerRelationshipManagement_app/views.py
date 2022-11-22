@@ -24,8 +24,11 @@ class ClientViewset(ModelViewSet):
         # return Client.objects.all()
         clientQueryset = Client.objects.all() 
         clientLastName = self.request.GET.get('lastName') 
+        clientEmail = self.request.GET.get('email') 
         if clientLastName is not None:
             clientQueryset = clientQueryset.filter(lastName=clientLastName)
+        if clientEmail is not None:
+            clientQueryset = clientQueryset.filter(email=clientEmail)
         return clientQueryset
 
 
