@@ -61,6 +61,9 @@ class ContractViewset(ModelViewSet):
         if contractCreationDate is not None:
             contractQueryset = contractQueryset.filter(dateCreated=contractCreationDate)
 
+        if contractAmount is not None:
+            contractQueryset = contractQueryset.filter(amount=contractAmount)
+
         return contractQueryset
 
 
@@ -70,4 +73,19 @@ class EventViewset(ModelViewSet):
     serializer_class = EventSerializer
 
     def get_queryset(self):
-        return Event.objects.all()
+        eventQueryset = Event.objects.all()
+        
+        eventClientLastName = self.request.GET.get('lastName') 
+        eventClientEmail = self.request.GET.get('email') 
+        eventDate = self.request.GET.get('eventDate') 
+
+        if eventClientLastName is not None:
+            clientQueryset = Client.objects.filter(lastName=eventClientLastName)
+            contractQueryset = Contract.objects.filter(
+                Q(client__in=clientQueryset)
+            )
+            eventQueryset = eventQueryset.filter(
+                Q(eventStatus__in=contractQueryset)
+            )
+
+        return eventQueryset
