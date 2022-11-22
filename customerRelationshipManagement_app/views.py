@@ -2,8 +2,8 @@ from django.shortcuts import render
 
 from rest_framework.viewsets import ModelViewSet
 
-from customerRelationshipManagement_app.models import Client
-from customerRelationshipManagement_app.serializers import ClientSerializer
+from customerRelationshipManagement_app.models import Client, Contract
+from customerRelationshipManagement_app.serializers import ClientSerializer, ContractSerializer
 
 
 def index(request):
@@ -22,3 +22,12 @@ class ClientViewset(ModelViewSet):
     def get_queryset(self):
         # return Client.objects.filter(=self.kwargs[''])
         return Client.objects.all()
+
+
+class ContractViewset(ModelViewSet):
+    """API endpoint that allows Contracts to be CRUD."""
+
+    serializer_class = ContractSerializer
+
+    def get_queryset(self):
+        return Contract.objects.all()
