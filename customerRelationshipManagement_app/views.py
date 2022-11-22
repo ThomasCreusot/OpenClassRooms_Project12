@@ -23,13 +23,16 @@ class ClientViewset(ModelViewSet):
     def get_queryset(self):
         # return Client.objects.filter(=self.kwargs[''])
         # return Client.objects.all()
+
         clientQueryset = Client.objects.all() 
         clientLastName = self.request.GET.get('lastName') 
         clientEmail = self.request.GET.get('email') 
+
         if clientLastName is not None:
             clientQueryset = clientQueryset.filter(lastName=clientLastName)
         if clientEmail is not None:
             clientQueryset = clientQueryset.filter(email=clientEmail)
+
         return clientQueryset
 
 
@@ -46,17 +49,12 @@ class ContractViewset(ModelViewSet):
         contractCreationDate = self.request.GET.get('creationDate') 
         contractAmount = self.request.GET.get('amount') 
 
-        if contractClientLastName is not None:
-            clientQueryset = Client.objects.filter(lastName=contractClientLastName)
-            contractQueryset = contractQueryset.filter(
-                Q(client__in=clientQueryset)
-            )
-
-        if contractClientEmail is not None:
-            clientQueryset = Client.objects.filter(email=contractClientEmail)
-            contractQueryset = contractQueryset.filter(
-                Q(client__in=clientQueryset)
-            )
+        if contractClientLastName is not None or contractClientEmail is not None:
+            if contractClientLastName is not None:
+                clientQueryset = Client.objects.filter(lastName=contractClientLastName)
+            if contractClientEmail is not None:
+                clientQueryset = Client.objects.filter(email=contractClientEmail)
+            contractQueryset = contractQueryset.filter(Q(client__in=clientQueryset))
 
         if contractCreationDate is not None:
             contractQueryset = contractQueryset.filter(dateCreated=contractCreationDate)
@@ -79,23 +77,13 @@ class EventViewset(ModelViewSet):
         eventClientEmail = self.request.GET.get('email') 
         eventDate = self.request.GET.get('eventDate') 
 
-        if eventClientLastName is not None:
-            clientQueryset = Client.objects.filter(lastName=eventClientLastName)
-            contractQueryset = Contract.objects.filter(
-                Q(client__in=clientQueryset)
-            )
-            eventQueryset = eventQueryset.filter(
-                Q(eventStatus__in=contractQueryset)
-            )
-
-        if eventClientEmail is not None:
-            clientQueryset = Client.objects.filter(email=eventClientEmail)
-            contractQueryset = Contract.objects.filter(
-                Q(client__in=clientQueryset)
-            )
-            eventQueryset = eventQueryset.filter(
-                Q(eventStatus__in=contractQueryset)
-            )
+        if eventClientLastName is not None or eventClientEmail is not None:
+            if eventClientLastName is not None :
+                clientQueryset = Client.objects.filter(lastName=eventClientLastName)
+            if eventClientEmail is not None:
+                clientQueryset = Client.objects.filter(email=eventClientEmail)
+            contractQueryset = Contract.objects.filter(Q(client__in=clientQueryset))
+            eventQueryset = eventQueryset.filter(Q(eventStatus__in=contractQueryset))
 
         if eventDate is not None:
             eventQueryset = eventQueryset.filter(eventDate=eventDate)
