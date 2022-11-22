@@ -46,12 +46,18 @@ class ContractViewset(ModelViewSet):
         contractDate = self.request.GET.get('date') 
         contractAmount = self.request.GET.get('amount') 
 
-        #REPRENDRE ICI : il faut établir le lien; utiliser objet Q ?
         if contractClientLastName is not None:
             clientQueryset = Client.objects.filter(lastName=contractClientLastName)
             contractQueryset = contractQueryset.filter(
                 Q(client__in=clientQueryset)
             )
+
+        if contractClientEmail is not None:
+            clientQueryset = Client.objects.filter(email=contractClientEmail)
+            contractQueryset = contractQueryset.filter(
+                Q(client__in=clientQueryset)
+            )
+
         return contractQueryset
 
 
