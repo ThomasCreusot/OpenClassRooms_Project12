@@ -97,4 +97,7 @@ class EventViewset(ModelViewSet):
                 Q(eventStatus__in=contractQueryset)
             )
 
+        if eventDate is not None:
+            eventQueryset = eventQueryset.filter(eventDate=eventDate)
+
         return eventQueryset
