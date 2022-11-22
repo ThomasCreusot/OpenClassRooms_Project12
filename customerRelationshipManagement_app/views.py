@@ -2,8 +2,8 @@ from django.shortcuts import render
 
 from rest_framework.viewsets import ModelViewSet
 
-from customerRelationshipManagement_app.models import Client, Contract
-from customerRelationshipManagement_app.serializers import ClientSerializer, ContractSerializer
+from customerRelationshipManagement_app.models import Client, Contract, Event
+from customerRelationshipManagement_app.serializers import ClientSerializer, ContractSerializer, EventSerializer
 
 
 def index(request):
@@ -31,3 +31,12 @@ class ContractViewset(ModelViewSet):
 
     def get_queryset(self):
         return Contract.objects.all()
+
+
+class EventViewset(ModelViewSet):
+    """API endpoint that allows Events to be CRUD."""
+
+    serializer_class = EventSerializer
+
+    def get_queryset(self):
+        return Event.objects.all()

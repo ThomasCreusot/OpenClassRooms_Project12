@@ -18,12 +18,13 @@ from django.urls import path, include
 
 from rest_framework import routers
  
-from customerRelationshipManagement_app.views import index, ClientViewset, ContractViewset
+from customerRelationshipManagement_app.views import index, ClientViewset, ContractViewset, EventViewset
 
 
 router = routers.SimpleRouter()
 router.register('clients', ClientViewset, basename='clients') 
 router.register('contracts', ContractViewset, basename='contracts') 
+router.register('events', EventViewset, basename='events') 
 
 urlpatterns = [
     path('admin/', admin.site.urls),

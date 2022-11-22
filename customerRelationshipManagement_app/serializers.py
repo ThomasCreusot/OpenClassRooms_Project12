@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from customerRelationshipManagement_app.models import Client, Contract
+from customerRelationshipManagement_app.models import Client, Contract, Event
 
 class ClientSerializer(ModelSerializer):
     """Serializes Client objects"""
@@ -11,8 +11,16 @@ class ClientSerializer(ModelSerializer):
 
 
 class ContractSerializer(ModelSerializer):
-    """Serializes Client objects"""
+    """Serializes Contract objects"""
 
     class Meta:
         model = Contract
         fields = ['id', 'salesContact', 'client', 'dateCreated', 'dateUpdated', 'status', 'amount', 'paymentDue']
+
+
+class EventSerializer(ModelSerializer):
+    """Serializes Event objects"""
+
+    class Meta:
+        model = Event
+        fields = ['id', 'dateCreated', 'dateUpdated', 'supportContact', 'eventStatus', 'attendees', 'eventDate', 'notes']
