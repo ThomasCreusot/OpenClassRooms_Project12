@@ -21,7 +21,12 @@ class ClientViewset(ModelViewSet):
 
     def get_queryset(self):
         # return Client.objects.filter(=self.kwargs[''])
-        return Client.objects.all()
+        # return Client.objects.all()
+        clientQueryset = Client.objects.all() 
+        clientLastName = self.request.GET.get('lastName') 
+        if clientLastName is not None:
+            clientQueryset = clientQueryset.filter(lastName=clientLastName)
+        return clientQueryset
 
 
 class ContractViewset(ModelViewSet):
