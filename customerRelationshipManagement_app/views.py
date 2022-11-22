@@ -88,4 +88,13 @@ class EventViewset(ModelViewSet):
                 Q(eventStatus__in=contractQueryset)
             )
 
+        if eventClientEmail is not None:
+            clientQueryset = Client.objects.filter(email=eventClientEmail)
+            contractQueryset = Contract.objects.filter(
+                Q(client__in=clientQueryset)
+            )
+            eventQueryset = eventQueryset.filter(
+                Q(eventStatus__in=contractQueryset)
+            )
+
         return eventQueryset
