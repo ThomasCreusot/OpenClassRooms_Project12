@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 
 from rest_framework.viewsets import ModelViewSet
@@ -38,7 +39,20 @@ class ContractViewset(ModelViewSet):
     serializer_class = ContractSerializer
 
     def get_queryset(self):
-        return Contract.objects.all()
+        contractQueryset = Contract.objects.all()
+        
+        contractClientLastName = self.request.GET.get('lastName') 
+        contractClientEmail = self.request.GET.get('email') 
+        contractDate = self.request.GET.get('date') 
+        contractAmount = self.request.GET.get('amount') 
+
+        #REPRENDRE ICI : il faut établir le lien; utiliser objet Q ?
+        if contractClientLastName is not None:
+            clientQueryset = Client.objects.filter(lastName=contractClientLastName)
+            contractQueryset = contractQueryset.filter(
+                Q(client__in=clientQueryset)
+            )
+        return contractQueryset
 
 
 class EventViewset(ModelViewSet):
