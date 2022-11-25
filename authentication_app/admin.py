@@ -135,7 +135,8 @@ admin.site.register(User, UserAdmin)
 
 # 'date_of_birth' by 'team'
 # got and error :  Unknown field(s) (is_admin) specified for User
-# email for fieldset --> username
+# fieldsets and add_fieldsets
+
 
 from django import forms
 from django.contrib import admin
@@ -189,6 +190,7 @@ class UserChangeForm(forms.ModelForm):
         #fields = ('email', 'password', 'team', 'is_active', 'is_admin')
         fields = ('username', 'password', 'team', 'is_active')
 
+
 class UserAdmin(BaseUserAdmin):
     # The forms to add and change user instances
     form = UserChangeForm
@@ -198,17 +200,18 @@ class UserAdmin(BaseUserAdmin):
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
     #list_display = ('email', 'team', 'is_admin')
-    list_display = ('username', 'team')
+    list_display = ('username', 'team', 'email')
 
     #list_filter = ('is_admin',)
 
     fieldsets = (
         #(None, {'fields': ('email', 'password')}),
-        (None, {'fields': ('username', 'password')}),
-        
-        ('Personal info', {'fields': ('team',)}),
-
+        (None, {'fields': ('username', 'password', 'team')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
         #('Permissions', {'fields': ('is_admin',)}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')})
+
 
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -217,12 +220,17 @@ class UserAdmin(BaseUserAdmin):
         (None, {
             'classes': ('wide',),
             #'fields': ('email', 'team', 'password1', 'password2'),
-            'fields': ('username', 'team', 'password1', 'password2'),
+            'fields': ('username', 'password1', 'password2', 'team'),
         }),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')})
     )
-    search_fields = ('email',)
+    search_fields = ('username',)
     ordering = ('email',)
     filter_horizontal = ()
+
+
 
 
 # Now register the new UserAdmin...
