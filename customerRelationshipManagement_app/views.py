@@ -35,7 +35,7 @@ class ClientViewset(ModelViewSet):
         if clientEmail is not None:
             clientQueryset = clientQueryset.filter(email=clientEmail)
 
-        if authenticatedUserTeam == "SALES":
+        if authenticatedUserTeam == "SALES" or authenticatedUserTeam == "MANAGEMENT":
             # Sales team : READ : all clients
             return clientQueryset
         if authenticatedUserTeam == "SUPPORT":
@@ -46,6 +46,10 @@ class ClientViewset(ModelViewSet):
             clientOfContractOfEventManagedByAuthenticatedSupportUser = clientQueryset.filter(client_contract__in=contractOfEventManagedByAuthenticatedSupportUser)
             return clientOfContractOfEventManagedByAuthenticatedSupportUser
         #before "if authenticatedUserTeam" code was : return clientQueryset
+
+    # modification of a client : 
+    # def get_queryset(self):
+        #pass
 
 
 class ContractViewset(ModelViewSet):
