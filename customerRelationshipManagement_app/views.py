@@ -47,10 +47,6 @@ class ClientViewset(ModelViewSet):
             return clientOfContractOfEventManagedByAuthenticatedSupportUser
         #before "if authenticatedUserTeam" code was : return clientQueryset
 
-    # modification of a client : 
-    # def get_queryset(self):
-        #pass
-
 
 class ContractViewset(ModelViewSet):
     """API endpoint that allows Contracts to be CRUD."""
