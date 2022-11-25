@@ -200,7 +200,7 @@ class UserAdmin(BaseUserAdmin):
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
     #list_display = ('email', 'team', 'is_admin')
-    list_display = ('username', 'team', 'email')
+    list_display = ('id', 'username', 'team', 'email')
 
     #list_filter = ('is_admin',)
 

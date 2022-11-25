@@ -24,6 +24,8 @@ class ClientViewset(ModelViewSet):
         # return Client.objects.filter(=self.kwargs[''])
         # return Client.objects.all()
 
+        authenticatedUserTeam = self.request.user.team
+
         clientQueryset = Client.objects.all() 
         clientLastName = self.request.GET.get('lastName') 
         clientEmail = self.request.GET.get('email') 
@@ -33,7 +35,17 @@ class ClientViewset(ModelViewSet):
         if clientEmail is not None:
             clientQueryset = clientQueryset.filter(email=clientEmail)
 
-        return clientQueryset
+        if authenticatedUserTeam == "SALES":
+            # Sales team : READ : all clients
+            return clientQueryset
+        if authenticatedUserTeam == "SUPPORT":
+               # Support team : READ : only clients associated to an event they manage.
+            eventManagedByAuthenticatedSupportUser = Event.objects.filter(supportContact=self.request.user) 
+            contractOfEventManagedByAuthenticatedSupportUser = Contract.objects.filter(contract_event__in=eventManagedByAuthenticatedSupportUser)
+            # filter based on previous queryset : clientQueryset; to take account of URL research
+            clientOfContractOfEventManagedByAuthenticatedSupportUser = clientQueryset.filter(client_contract__in=contractOfEventManagedByAuthenticatedSupportUser)
+            return clientOfContractOfEventManagedByAuthenticatedSupportUser
+        #before "if authenticatedUserTeam" code was : return clientQueryset
 
 
 class ContractViewset(ModelViewSet):
