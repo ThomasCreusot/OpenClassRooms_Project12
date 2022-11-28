@@ -1,10 +1,27 @@
-# from django.shortcuts import get_object_or_404
-# from django.db.models import Q
-
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
 
 from customerRelationshipManagement_app.models import Client, Contract, Event
+
+
+def user_is_authentificated_sales_or_management(request):
+    """Returns true if user is from team SALES or MANAGEMENT and is authenticated"""
+
+    return bool((request.user.team == 'SALES' or request.user.team == 'MANAGEMENT') and request.user.is_authenticated)
+
+
+def support_in_charge_of_event_related_to_client(request, obj):
+    """Returns True if the authenticated user is in charge of at least an Event related to the obj of the request wich is a Client"""
+
+    event_managed_by_authenticated_support_user = Event.objects.filter(supportContact = request.user) 
+    contract_of_event_managed_by_authenticated_support_user = Contract.objects.filter(contract_event__in = event_managed_by_authenticated_support_user)
+    clients_of_contract_of_event_managed_by_authenticated_support_user = Client.objects.filter(client_contract__in = contract_of_event_managed_by_authenticated_support_user)
+
+    permission = False
+    for client in clients_of_contract_of_event_managed_by_authenticated_support_user:
+        if obj.id == client.id:
+            permission = True
+    return permission
 
 
 class ClientsPermission(BasePermission):
@@ -37,27 +54,20 @@ class ClientsPermission(BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return bool(request.user.is_authenticated)
         elif request.method == "POST":
-            return bool((request.user.team == 'SALES' or request.user.team == 'MANAGEMENT') and request.user.is_authenticated)
+            return user_is_authentificated_sales_or_management(request)
         elif request.method == "PUT":
-            #Can not copy paste code from has_object_permission as it implies 'obj'; and return True is needed for well beahviour of has_object_permission
+            # Can not copy paste code from has_object_permission as it implies 'obj'; and so return
+            # True is needed for well beahviour of has_object_permission
             return True
         elif request.method == "DELETE":
             return False 
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
-            if (request.user.team == 'SALES' or request.user.team == 'MANAGEMENT') and request.user.is_authenticated:
+            if user_is_authentificated_sales_or_management(request):
                 return True
             elif request.user.team == 'SUPPORT' and request.user.is_authenticated:
-                eventManagedByAuthenticatedSupportUser = Event.objects.filter(supportContact=request.user) 
-                contractOfEventManagedByAuthenticatedSupportUser = Contract.objects.filter(contract_event__in=eventManagedByAuthenticatedSupportUser)
-                clientOfContractOfEventManagedByAuthenticatedSupportUser = Client.objects.filter(client_contract__in=contractOfEventManagedByAuthenticatedSupportUser)
-
-                permission = False
-                for client in clientOfContractOfEventManagedByAuthenticatedSupportUser:
-                    if obj.id == client.id:
-                        permission = True
-                return permission
+                return support_in_charge_of_event_related_to_client(request, obj)
 
         elif request.method == "POST":
             return False  # "Method \"POST\" not allowed."
@@ -104,9 +114,10 @@ class ContractsPermission(BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return bool(request.user.is_authenticated)
         elif request.method == "POST":
-            return bool((request.user.team == 'SALES' or request.user.team == 'MANAGEMENT') and request.user.is_authenticated)
+            return user_is_authentificated_sales_or_management(request)
         elif request.method == "PUT":
-            #Can not copy paste code from has_object_permission as it implies 'obj'; and return True is needed for well beahviour of has_object_permission
+            # Can not copy paste code from has_object_permission as it implies 'obj'; and so return
+            # True is needed for well beahviour of has_object_permission
             return True
         elif request.method == "DELETE":
             return False 
@@ -160,9 +171,10 @@ class EventsPermission(BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return bool(request.user.is_authenticated)
         elif request.method == "POST":
-            return bool((request.user.team == 'SALES' or request.user.team == 'MANAGEMENT') and request.user.is_authenticated)
+            return user_is_authentificated_sales_or_management(request)
         elif request.method == "PUT":
-            #Can not copy paste code from has_object_permission as it implies 'obj'; and return True is needed for well beahviour of has_object_permission
+            # Can not copy paste code from has_object_permission as it implies 'obj'; and so return
+            # True is needed for well beahviour of has_object_permission
             return True
         elif request.method == "DELETE":
             return False 
@@ -179,7 +191,6 @@ class EventsPermission(BasePermission):
                 return True
             elif request.user.team == 'SALES' and request.user.is_authenticated:
                 return obj.eventStatus.client.salesContact_id == request.user
-
             elif request.user.team == 'SUPPORT' and request.user.is_authenticated:
                 return obj.supportContact == request.user
 
