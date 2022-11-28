@@ -7,13 +7,6 @@ from customerRelationshipManagement_app.models import Client, Contract, Event
 from customerRelationshipManagement_app.serializers import ClientSerializer, ContractSerializer, EventSerializer
 from customerRelationshipManagement_app.permissions import ClientsPermission, ContractsPermission, EventsPermission
 
-def index(request):
-    obj = Client.objects.all()
-    context={
-        "obj": obj,
-    }
-    return render(request, 'index.html', context=context)
-
 
 class ClientViewset(ModelViewSet):
     """API endpoint that allows Clients to be CRUD."""

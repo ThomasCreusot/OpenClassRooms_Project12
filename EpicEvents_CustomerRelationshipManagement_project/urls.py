@@ -18,7 +18,7 @@ from django.urls import path, include
 
 from rest_framework import routers
  
-from customerRelationshipManagement_app.views import index, ClientViewset, ContractViewset, EventViewset
+from customerRelationshipManagement_app.views import ClientViewset, ContractViewset, EventViewset
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -35,8 +35,4 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('api/', include(router.urls)),
-
-    #test connexion to database
-    path('', index, name="index"),
-
 ]
