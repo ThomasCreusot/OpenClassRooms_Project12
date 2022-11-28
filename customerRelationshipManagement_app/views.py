@@ -5,7 +5,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from customerRelationshipManagement_app.models import Client, Contract, Event
 from customerRelationshipManagement_app.serializers import ClientSerializer, ContractSerializer, EventSerializer
-from customerRelationshipManagement_app.permissions import ClientsPermission
+from customerRelationshipManagement_app.permissions import ClientsPermission, ContractsPermission
 
 def index(request):
     obj = Client.objects.all()
@@ -54,6 +54,8 @@ class ContractViewset(ModelViewSet):
     """API endpoint that allows Contracts to be CRUD."""
 
     serializer_class = ContractSerializer
+
+    permission_classes = [ContractsPermission]
 
     def get_queryset(self):
         contractQueryset = Contract.objects.all()
