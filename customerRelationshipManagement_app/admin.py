@@ -4,6 +4,22 @@ from django.contrib import admin
 
 from customerRelationshipManagement_app.models import Client, Contract, Event
 
-admin.site.register(Client)
-admin.site.register(Contract)
-admin.site.register(Event)
+
+class ClientAdmin(admin.ModelAdmin):
+
+    list_display = ('id', 'lastName', 'email', 'companyName', 'salesContact_id')
+
+
+class ContractAdmin(admin.ModelAdmin):
+
+    list_display = ('id', 'salesContact', 'client', 'status')
+
+
+class EventAdmin(admin.ModelAdmin):
+
+    list_display = ('id', 'supportContact', 'eventStatus', 'attendees')
+
+
+admin.site.register(Client, ClientAdmin)
+admin.site.register(Contract, ContractAdmin)
+admin.site.register(Event, EventAdmin)
