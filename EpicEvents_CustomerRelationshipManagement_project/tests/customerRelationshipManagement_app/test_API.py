@@ -15,10 +15,10 @@ class TestCategory(APITestCase):
 
 """ Proof of concept authentication
 from rest_framework.test import APIClient
-@pytest.mark.django_db  
+@pytest.mark.django_db
 def test_book_infos_view():
     sales_userA = User(
-        username = 'user_for_testA', 
+        username = 'user_for_testA',
         password = 'user_for_testA',
         team = 'SALES',
     )
@@ -35,7 +35,7 @@ def test_book_infos_view():
     client = APIClient()
     client.force_authenticate(user=user)
 
-    response = client.get('/api/clients/')  # GET
+    response = client.get('/api/clients/')
     content = response.content.decode()
     print(content)
 #>>> Works
@@ -43,28 +43,38 @@ def test_book_infos_view():
 
 
 class ClientTests(APITestCase):
-    def test_client_read(self):
-        sales_userA = User(
-                username = 'user_for_testA', 
+    def test_client_a_sales_member_can_create(self):
+        """Tests if an User from SALES team can create a Client object"""
+
+        # Creation of a User object
+        sales_user_A = User(
+                username = 'user_for_testA',
                 password = 'user_for_testA',
                 team = 'SALES',
             )
-        sales_userA.save()
+        sales_user_A.save()
 
-        AppClient.objects.create(
-            companyName = 'test_company',
-            dateCreated = '2022-11-28T14:55:11Z',
-            dateUpdated = '2022-11-28T14:55:11Z',
-            salesContact_id = sales_userA,
-        )
+        # Django API client for sales_user_A
+        client_sales_user_A = APIClient()
+        client_sales_user_A.force_authenticate(user=sales_user_A)
 
+        # Empty database
+        self.assertFalse(AppClient.objects.exists())
 
-        user = User.objects.get(username='user_for_testA')
-        client = APIClient()
-        client.force_authenticate(user=user)
+        # Creation of a Client object in the database 
+        data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : sales_user_A.id,
+        }
 
-        response = client.get('/api/clients/')  # GET
+        # The User from SALES team creates a Client object
+        response = client_sales_user_A.post('/api/clients/', data)
         content = response.content.decode()
 
-        #response = self.client.get('/users/4/')
-        #self.assertEqual(response.data, {'id': 4, 'username': 'lauren'})
+        expected_content = '{"id":1,"firstName":"","lastName":"","email":"","phone":"","mobile":"","companyName":"test_company","dateCreated":"2022-11-28T14:55:11Z","dateUpdated":"2022-11-28T14:55:11Z","salesContact_id":1}'
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(AppClient.objects.exists())
+        self.assertEqual(content, expected_content)
+
