@@ -123,7 +123,6 @@ class ClientTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_content)
 
-
     def test_client_a_sales_member_can_update_a_client_he_is_associated_with(self):
         """Tests if an User from SALES team can update a Client object
         The user needs to create a Client before update it"""
@@ -165,7 +164,6 @@ class ClientTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(AppClient.objects.get(email='updated_email@mail.com').companyName, "test_company_updated")
-
 
     def test_client_a_sales_member_can_not_update_a_client_he_is_not_associated_with(self):
         """Tests if an User from SALES team can not update a Client object he is not associated with
@@ -224,7 +222,6 @@ class ClientTests(APITestCase):
         self.assertEqual(AppClient.objects.get(email='').companyName, "test_company")
         self.assertEqual(response.content.decode(), expected_content)
 
-
     def test_client_a_sales_member_can_delete(self):
         """Tests if an User from SALES team can delete a Client object
         The user needs to create a Client before triyng to delete it"""
@@ -259,4 +256,38 @@ class ClientTests(APITestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertTrue(AppClient.objects.exists())
+
+    def test_client_a_support_member_can_not_create(self):
+        """Tests if an User from SUPPORT team can not create a Client object"""
+
+        # Creation of a User object
+        support_user_A = User(
+                username = 'user_for_testA',
+                password = 'user_for_testA',
+                team = 'SUPPORT',
+            )
+        support_user_A.save()
+
+        # Django API client for sales_user_A
+        client_support_user_A = APIClient()
+        client_support_user_A.force_authenticate(user=support_user_A)
+
+        # Empty database
+        self.assertFalse(AppClient.objects.exists())
+
+        # Creation of a Client object in the database 
+        data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : support_user_A.id,
+        }
+
+        # The User from SALES team creates a Client object
+        response = client_support_user_A.post('/api/clients/', data)
+
+        expected_content = {"detail":"You are not allowed to do this action, see permissions.py / ClientsPermission"}
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(AppClient.objects.exists())
+        self.assertEqual(response.json(), expected_content)
 
