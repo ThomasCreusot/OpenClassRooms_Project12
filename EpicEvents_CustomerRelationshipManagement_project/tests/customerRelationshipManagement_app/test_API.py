@@ -3,6 +3,7 @@
 from rest_framework.test import APITestCase, APIClient
 
 from customerRelationshipManagement_app.models import Client as AppClient  # pour ne pas confondre avec le Client Django des tests
+from customerRelationshipManagement_app.models import Contract, Event
 from authentication_app.models import User
 
 
@@ -291,3 +292,197 @@ class ClientTests(APITestCase):
         self.assertFalse(AppClient.objects.exists())
         self.assertEqual(response.json(), expected_content)
 
+    def test_client_a_support_member_can_read_as_he_is_the_SupportContact_of_the_client_event(self):
+        """Tests if an User from SUPPORT team can read a Client object
+        A Client, a Contract and an Event must be created before the support asks to read the client object"""
+
+        # USERS
+        # Creation of a User object
+        sales_user_A = User(
+                username = 'user_for_testA',
+                password = 'user_for_testA',
+                team = 'SALES',
+            )
+        sales_user_A.save()
+
+        # Creation of a User object
+        support_user_B = User(
+                username = 'user_for_testB',
+                password = 'user_for_testB',
+                team = 'SUPPORT',
+            )
+        support_user_B.save()
+
+        # Django API client for sales_user_A
+        client_sales_user_A = APIClient()
+        client_sales_user_A.force_authenticate(user=sales_user_A)
+
+        # CLIENT OBJECT
+        # Creation of a Client object in the database
+        client_object_data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : sales_user_A.id,
+        }
+
+        # The User from SALES team creates a Client object
+        client_sales_user_A.post('/api/clients/', client_object_data)
+
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
+        # CONTRACT OBJECT
+        # Creation of a Contract object in the database
+        contract_object_data = {'salesContact' : sales_user_A.id,
+            'client' : tested_AppClient_object_id,
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'amount' : 1,
+            'paymentDue' : '2022-11-28T14:55:11Z',
+        }
+
+        # The User from SALES team creates a Contract object
+        client_sales_user_A.post('/api/contracts/', contract_object_data)
+
+        # ID of the first object in Contract.objects.all() queryset 
+        tested_Contract_object_id = Contract.objects.all()[0].id
+
+        # EVENT OBJECT
+        # Creation of an Event object in the database
+        event_object_data = {
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',            
+
+            'supportContact' : support_user_B.id,
+            'eventStatus' : tested_Contract_object_id,
+            'attendees' : 1,
+            'eventDate' : '2022-11-28T14:55:11Z',
+        }
+
+        # The User from SALES team creates an event object
+        client_sales_user_A.post('/api/events/', event_object_data)
+
+        # SUPPORT USER READS EVENT OBJECT 
+        # Django API client for support_user_B
+        client_support_user_B = APIClient()
+        client_support_user_B.force_authenticate(user=support_user_B)
+
+        # The User from SALES team reads the Client object
+        response = client_support_user_B.get('/api/clients/')
+
+        # ID of the first object in Event.objects.all() queryset 
+        tested_Event_object_id = Event.objects.all()[0].id
+
+        #expected_content = [{'id': tested_Event_object_id,
+        #    'dateCreated': '2022-11-28T14:55:11Z',
+        #    'dateUpdated': '2022-11-28T14:55:11Z',
+        #    'supportContact': support_user_B.id,
+        #    'eventStatus': tested_Contract_object_id,
+        #    'attendees': 1,
+        #    'eventDate': '2022-11-28T14:55:11Z',
+        #    'notes': ''}]
+
+        expected_content = [{'id': 7, 'firstName': '', 'lastName': '', 'email': '', 'phone': '',
+        'mobile': '', 'companyName': 'test_company', 'dateCreated': '2022-11-28T14:55:11Z',
+        'dateUpdated': '2022-11-28T14:55:11Z', 'salesContact_id': 11}]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), expected_content)
+
+    def test_client_a_support_member_can_not_read_as_he_is_not_the_SupportContact_of_the_client_event(self):
+        """Tests if an User from SUPPORT team can read a Client object
+        A Client, a Contract and an Event must be created before the support asks to read the client object"""
+
+        # USERS
+        # Creation of a User object
+        sales_user_A = User(
+                username = 'user_for_testA',
+                password = 'user_for_testA',
+                team = 'SALES',
+            )
+        sales_user_A.save()
+
+        # Creation of a User object
+        support_user_B = User(
+                username = 'user_for_testB',
+                password = 'user_for_testB',
+                team = 'SUPPORT',
+            )
+        support_user_B.save()
+
+        # Creation of a User object
+        support_user_C = User(
+                username = 'user_for_testC',
+                password = 'user_for_testC',
+                team = 'SUPPORT',
+            )
+        support_user_C.save()
+
+        # Django API client for sales_user_A
+        client_sales_user_A = APIClient()
+        client_sales_user_A.force_authenticate(user=sales_user_A)
+
+        # CLIENT OBJECT
+        # Creation of a Client object in the database
+        client_object_data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : sales_user_A.id,
+        }
+
+        # The User from SALES team creates a Client object
+        client_sales_user_A.post('/api/clients/', client_object_data)
+
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
+        # CONTRACT OBJECT
+        # Creation of a Contract object in the database
+        contract_object_data = {'salesContact' : sales_user_A.id,
+            'client' : tested_AppClient_object_id,
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'amount' : 1,
+            'paymentDue' : '2022-11-28T14:55:11Z',
+        }
+
+        # The User from SALES team creates a Contract object
+        client_sales_user_A.post('/api/contracts/', contract_object_data)
+
+        # ID of the first object in Contract.objects.all() queryset 
+        tested_Contract_object_id = Contract.objects.all()[0].id
+
+        # EVENT OBJECT
+        # Creation of an Event object in the database
+        event_object_data = {
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',            
+
+            'supportContact' : support_user_B.id,
+            'eventStatus' : tested_Contract_object_id,
+            'attendees' : 1,
+            'eventDate' : '2022-11-28T14:55:11Z',
+        }
+
+        # The User from SALES team creates an event object
+        client_sales_user_A.post('/api/events/', event_object_data)
+
+        # SUPPORT USER CAN NOT READ EVENT OBJECT 
+        # Django API client for support_user_C
+        client_support_user_C = APIClient()
+        client_support_user_C.force_authenticate(user=support_user_C)
+
+        # The User from SALES team reads the Client object
+        response = client_support_user_C.get('/api/clients/')
+        expected_content = []
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), expected_content)
+
+        # TEST ON DETAIL VIEW
+        # ID of the first object in Contract.objects.all() queryset 
+        tested_Event_object_id = Contract.objects.all()[0].id
+        response = client_support_user_C.get('/api/clients/{0}/'.format(tested_Event_object_id))
+        expected_content = {'detail': 'Not found.'}
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), expected_content)
+        
