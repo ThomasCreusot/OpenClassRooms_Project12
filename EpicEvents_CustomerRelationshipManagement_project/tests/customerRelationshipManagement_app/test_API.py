@@ -43,9 +43,8 @@ def test_book_infos_view():
 
 
 class ClientTests(APITestCase):
-    def test_1_client_a_sales_member_can_create(self):
-        """Tests if an User from SALES team can create a Client object
-        Note: '1' in the name as tests are executed by alphabetic order (if not '1' : test about Delete before Read and Update)"""
+    def test_client_a_sales_member_can_create(self):
+        """Tests if an User from SALES team can create a Client object"""
 
         # Creation of a User object
         sales_user_A = User(
@@ -71,20 +70,23 @@ class ClientTests(APITestCase):
 
         # The User from SALES team creates a Client object
         response = client_sales_user_A.post('/api/clients/', data)
-        content = response.content.decode()
 
-        expected_content = '{"id":1,"firstName":"","lastName":"","email":"","phone":"","mobile":"","companyName":"test_company","dateCreated":"2022-11-28T14:55:11Z","dateUpdated":"2022-11-28T14:55:11Z","salesContact_id":1}'
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
+        expected_content = {'id': tested_AppClient_object_id, 
+            'firstName': '', 'lastName': '', 'email': '', 'phone': '', 'mobile': '',
+            'companyName': 'test_company', 'dateCreated': '2022-11-28T14:55:11Z',
+            'dateUpdated': '2022-11-28T14:55:11Z',
+            'salesContact_id': sales_user_A.id}
 
         self.assertEqual(response.status_code, 201)
         self.assertTrue(AppClient.objects.exists())
-        self.assertEqual(content, expected_content)
+        self.assertEqual(response.json(), expected_content)
 
-
-    def test_2_client_a_sales_member_can_read(self):
+    def test_client_a_sales_member_can_read(self):
         """Tests if an User from SALES team can read a Client object
-        The user needs to create a Client before reading it
-        Note: '2' in the name as tests are executed by alphabetic order (if not '2' : test about Delete before Read and Update)
-        """
+        The user needs to create a Client before reading it"""
 
         # Creation of a User object
         sales_user_A = User(
@@ -108,23 +110,23 @@ class ClientTests(APITestCase):
         # The User from SALES team creates a Client object
         client_sales_user_A.post('/api/clients/', data)
  
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
         # The User from SALES team reads the Client object
         response = client_sales_user_A.get('/api/clients/')
 
-        expected_content = [{'id': 2, 'firstName': '', 'lastName': '', 'email': '', 'phone': '', 'mobile': '',
+        expected_content = [{'id': tested_AppClient_object_id, 'firstName': '', 'lastName': '', 'email': '', 'phone': '', 'mobile': '',
             'companyName': 'test_company', 'dateCreated': '2022-11-28T14:55:11Z',
-            'dateUpdated': '2022-11-28T14:55:11Z', 'salesContact_id': 2}]
+            'dateUpdated': '2022-11-28T14:55:11Z', 'salesContact_id': sales_user_A.id}]
 
-        print("2")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_content)
 
 
-    def test_3_client_a_sales_member_can_update(self):
+    def test_client_a_sales_member_can_update(self):
         """Tests if an User from SALES team can update a Client object
-        The user needs to create a Client before update it
-        Note: '3' in the name as tests are executed by alphabetic order (if not '3' : test about Delete before Read and Update)
-        """
+        The user needs to create a Client before update it"""
 
         # Creation of a User object
         sales_user_A = User(
@@ -148,6 +150,9 @@ class ClientTests(APITestCase):
         # The User from SALES team creates a Client object
         client_sales_user_A.post('/api/clients/', data)
  
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
         # The User from SALES team updates the Client object
         updated_data = {'email': 'updated_email@mail.com',
             'companyName' : 'test_company_updated',
@@ -155,19 +160,16 @@ class ClientTests(APITestCase):
             'dateUpdated' : '2022-11-28T14:55:11Z',
             'salesContact_id' : sales_user_A.id,
         }
- 
-        response = client_sales_user_A.put('/api/clients/3/', updated_data)
 
-        print("3")
+        response = client_sales_user_A.put('/api/clients/{0}/'.format(tested_AppClient_object_id), updated_data)
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(AppClient.objects.get(email='updated_email@mail.com').companyName, "test_company_updated")
 
 
-    def test_4_client_a_sales_member_can_delete(self):
+    def test_client_a_sales_member_can_delete(self):
         """Tests if an User from SALES team can delete a Client object
-        The user needs to create a Client before triyng to delete it
-        Note: '4' in the name as tests are executed by alphabetic order (if not '4' : test about Delete before Read and Update)
-        """
+        The user needs to create a Client before triyng to delete it"""
 
         # Creation of a User object
         sales_user_A = User(
@@ -191,9 +193,12 @@ class ClientTests(APITestCase):
         # The User from SALES team creates a Client object
         client_sales_user_A.post('/api/clients/', data)
 
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
         # The User from SALES team tries to delete the Client object
- 
-        response = client_sales_user_A.delete('/api/clients/4/')
-        print("4")
+        response = client_sales_user_A.delete('/api/clients/{0}/'.format(tested_AppClient_object_id))
+
         self.assertEqual(response.status_code, 403)
         self.assertTrue(AppClient.objects.exists())
+
