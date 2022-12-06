@@ -223,7 +223,7 @@ class ClientTests(APITestCase):
         self.assertEqual(AppClient.objects.get(email='').companyName, "test_company")
         self.assertEqual(response.content.decode(), expected_content)
 
-    def test_client_a_sales_member_can_delete(self):
+    def test_client_a_sales_member_can_not_delete(self):
         """Tests if an User from SALES team can delete a Client object
         The user needs to create a Client before triyng to delete it"""
 
@@ -543,3 +543,49 @@ class ClientTests(APITestCase):
         self.assertEqual(AppClient.objects.get(email='').companyName, "test_company")
         self.assertEqual(response.content.decode(), expected_content)
 
+    def test_client_a_support_member_can_not_delete(self):
+        """Tests if an User from SUPPORT team can delete a Client object
+        Another user creates a Client before"""
+
+        # Creation of two User object
+        sales_user_A = User(
+                username = 'user_for_testA',
+                password = 'user_for_testA',
+                team = 'SALES',
+            )
+        sales_user_A.save()
+
+        support_user_B = User(
+                username = 'user_for_testB',
+                password = 'user_for_testB',
+                team = 'SUPPORT',
+            )
+        support_user_B.save()
+
+
+        # Django API client for sales_user_A
+        client_sales_user_A = APIClient()
+        client_sales_user_A.force_authenticate(user=sales_user_A)
+
+        # Creation of a Client object in the database 
+        data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : sales_user_A.id,
+        }
+
+        # The User from SALES team creates a Client object
+        client_sales_user_A.post('/api/clients/', data)
+ 
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
+        # Django API client for sales_user_A
+        client_support_user_B = APIClient()
+        client_support_user_B.force_authenticate(user=support_user_B)
+
+        # The User from SUPPORT team tries to delete the Client object
+        response = client_support_user_B.delete('/api/clients/{0}/'.format(tested_AppClient_object_id))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(AppClient.objects.exists())
