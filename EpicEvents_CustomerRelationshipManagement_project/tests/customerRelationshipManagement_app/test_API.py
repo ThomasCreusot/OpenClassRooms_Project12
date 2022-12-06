@@ -1148,3 +1148,70 @@ class ContractTests(APITestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Contract.objects.get(dateCreated='2022-11-28T14:55:11Z').status, False)
         self.assertEqual(response.content.decode(), expected_content)
+
+    def test_contract_a_support_member_can_not_delete(self):
+        """Tests if an User from SUPPORT team can delete a Contract object
+        A Sales user needs to create a Client and a Contract before the Support user tries deleting it"""
+
+        # Creation of a User object
+        sales_user_A = User(
+                username = 'user_for_testA',
+                password = 'user_for_testA',
+                team = 'SALES',
+            )
+        sales_user_A.save()
+
+        support_user_B = User(
+                username = 'user_for_testB',
+                password = 'user_for_testB',
+                team = 'SUPPORT',
+            )
+        support_user_B.save()
+
+        # Django API client for sales_user_A
+        client_sales_user_A = APIClient()
+        client_sales_user_A.force_authenticate(user=sales_user_A)
+
+        # CLIENT OBJECT
+        # Creation of a Client object in the database 
+        data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : sales_user_A.id,
+        }
+
+        # The User from SALES team creates a Client object
+        client_sales_user_A.post('/api/clients/', data)
+
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
+        # Empty database
+        self.assertFalse(Contract.objects.exists())
+
+        # CONTRACT OBJECT
+        # Creation of a Contract object in the database
+        contract_object_data = {'salesContact' : sales_user_A.id,
+            'client' : tested_AppClient_object_id,
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'status': False,
+            'amount' : 1,
+            'paymentDue' : '2022-11-28T14:55:11Z',
+        }
+
+        # The User from SALES team creates a Contract object
+        response = client_sales_user_A.post('/api/contracts/', contract_object_data)
+
+        # ID of the first object in Contract.objects.all() queryset 
+        tested_Contract_object_id = Contract.objects.all()[0].id
+
+        # Django API client for support_user_B
+        client_support_user_B = APIClient()
+        client_support_user_B.force_authenticate(user=support_user_B)
+
+        # The User from SALES team tries to delete the Client object
+        response = client_support_user_B.delete('/api/contracts/{0}/'.format(tested_Contract_object_id))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(AppClient.objects.exists())
