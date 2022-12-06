@@ -210,7 +210,7 @@ class ClientTests(APITestCase):
         # ID of the first object in AppClient.objects.all() queryset 
         tested_AppClient_object_id = AppClient.objects.all()[0].id
 
-        # Django API client for sales_user_A
+        # Django API client for sales_user_B
         client_sales_user_B = APIClient()
         client_sales_user_B.force_authenticate(user=sales_user_B)
 
@@ -727,3 +727,148 @@ class ContractTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_content)
+
+    def test_contract_a_sales_member_can_update_a_contract_of_a_client_he_is_associated_with(self):
+        """Tests if an User from SALES team can update a Contract object of a client he is associated with
+        The user needs to create a Client and a Contract before updating it"""
+
+        # Creation of a User object
+        sales_user_A = User(
+                username = 'user_for_testA',
+                password = 'user_for_testA',
+                team = 'SALES',
+            )
+        sales_user_A.save()
+
+        # Django API client for sales_user_A
+        client_sales_user_A = APIClient()
+        client_sales_user_A.force_authenticate(user=sales_user_A)
+
+        # CLIENT OBJECT
+        # Creation of a Client object in the database 
+        data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : sales_user_A.id,
+        }
+
+        # The User from SALES team creates a Client object
+        client_sales_user_A.post('/api/clients/', data)
+
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
+        # Empty database
+        self.assertFalse(Contract.objects.exists())
+
+        # CONTRACT OBJECT
+        # Creation of a Contract object in the database
+        contract_object_data = {'salesContact' : sales_user_A.id,
+            'client' : tested_AppClient_object_id,
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'status': False,
+            'amount' : 1,
+            'paymentDue' : '2022-11-28T14:55:11Z',
+        }
+
+        # The User from SALES team creates a Contract object
+        response = client_sales_user_A.post('/api/contracts/', contract_object_data)
+
+        # ID of the first object in Contract.objects.all() queryset 
+        tested_Contract_object_id = Contract.objects.all()[0].id
+
+        # The User from SALES team updates the Contract  object
+        updated_data = {'salesContact' : sales_user_A.id,
+            'client' : tested_AppClient_object_id,
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'status': True,
+            'amount' : 10,
+            'paymentDue' : '2022-11-28T14:55:11Z',
+        }
+
+        response = client_sales_user_A.put('/api/contracts/{0}/'.format(tested_Contract_object_id), updated_data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Contract.objects.get(dateCreated='2022-11-28T14:55:11Z').status, True)
+
+    def test_contract_a_sales_member_can_not_update_a_contract_of_a_client_he_is_not_associated_with(self):
+        """Tests if an User from SALES team can update a Contract object of a client he is not associated with
+        Another user needs to create a Client and a Contract before updating it"""
+
+        # Creation of a User object
+        sales_user_A = User(
+                username = 'user_for_testA',
+                password = 'user_for_testA',
+                team = 'SALES',
+            )
+        sales_user_A.save()
+
+        sales_user_B = User(
+                username = 'user_for_testB',
+                password = 'user_for_testB',
+                team = 'SALES',
+            )
+        sales_user_B.save()
+
+        # Django API client for sales_user_A
+        client_sales_user_A = APIClient()
+        client_sales_user_A.force_authenticate(user=sales_user_A)
+
+        # CLIENT OBJECT
+        # Creation of a Client object in the database 
+        data = {'companyName' : 'test_company',
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'salesContact_id' : sales_user_A.id,
+        }
+
+        # The User from SALES team creates a Client object
+        client_sales_user_A.post('/api/clients/', data)
+
+        # ID of the first object in AppClient.objects.all() queryset 
+        tested_AppClient_object_id = AppClient.objects.all()[0].id
+
+        # Empty database
+        self.assertFalse(Contract.objects.exists())
+
+        # CONTRACT OBJECT
+        # Creation of a Contract object in the database
+        contract_object_data = {'salesContact' : sales_user_A.id,
+            'client' : tested_AppClient_object_id,
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'status': False,
+            'amount' : 1,
+            'paymentDue' : '2022-11-28T14:55:11Z',
+        }
+
+        # The User from SALES team creates a Contract object
+        response = client_sales_user_A.post('/api/contracts/', contract_object_data)
+
+        # ID of the first object in Contract.objects.all() queryset 
+        tested_Contract_object_id = Contract.objects.all()[0].id
+
+        # Django API client for sales_user_B
+        client_sales_user_B = APIClient()
+        client_sales_user_B.force_authenticate(user=sales_user_B)
+
+        # The User from SALES team updates the Contract  object
+        updated_data = {'salesContact' : sales_user_A.id,
+            'client' : tested_AppClient_object_id,
+            'dateCreated' : '2022-11-28T14:55:11Z',
+            'dateUpdated' : '2022-11-28T14:55:11Z',
+            'status': True,
+            'amount' : 10,
+            'paymentDue' : '2022-11-28T14:55:11Z',
+        }
+
+        response = client_sales_user_B.put('/api/contracts/{0}/'.format(tested_Contract_object_id), updated_data)
+
+        expected_content = '{"detail":"You are not allowed to do this action, see permissions.py / ContractsPermission"}'
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Contract.objects.get(dateCreated='2022-11-28T14:55:11Z').status, False)
+        self.assertEqual(response.content.decode(), expected_content)
+
