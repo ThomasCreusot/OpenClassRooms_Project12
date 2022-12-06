@@ -371,7 +371,7 @@ class ClientTests(APITestCase):
         response = client_support_user_B.get('/api/clients/')
 
         # ID of the first object in Event.objects.all() queryset 
-        tested_Event_object_id = Event.objects.all()[0].id
+        #tested_Event_object_id = Event.objects.all()[0].id
 
         #expected_content = [{'id': tested_Event_object_id,
         #    'dateCreated': '2022-11-28T14:55:11Z',
@@ -382,9 +382,9 @@ class ClientTests(APITestCase):
         #    'eventDate': '2022-11-28T14:55:11Z',
         #    'notes': ''}]
 
-        expected_content = [{'id': 7, 'firstName': '', 'lastName': '', 'email': '', 'phone': '',
+        expected_content = [{'id': tested_AppClient_object_id, 'firstName': '', 'lastName': '', 'email': '', 'phone': '',
         'mobile': '', 'companyName': 'test_company', 'dateCreated': '2022-11-28T14:55:11Z',
-        'dateUpdated': '2022-11-28T14:55:11Z', 'salesContact_id': 11}]
+        'dateUpdated': '2022-11-28T14:55:11Z', 'salesContact_id': sales_user_A.id}]
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_content)
@@ -485,4 +485,4 @@ class ClientTests(APITestCase):
         expected_content = {'detail': 'Not found.'}
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), expected_content)
-        
+
