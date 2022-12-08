@@ -1,8 +1,8 @@
-#import pytest
-
 from rest_framework.test import APITestCase, APIClient
 
-from customerRelationshipManagement_app.models import Client as AppClient  # pour ne pas confondre avec le Client Django des tests
+# To avoid confusion with Django Client designed for testing
+from customerRelationshipManagement_app.models import Client as AppClient
+
 from customerRelationshipManagement_app.models import Contract, Event
 from authentication_app.models import User
 
@@ -11,42 +11,10 @@ from authentication_app.models import User
 Improvement could be to use the setup_method(self, method): at the begining of each Class;
 However, it would be used for User creation
 And with this method, User attributes are not available for tests
+
 To be studied and improved.
-"""
 
-""" Proof of concept tests files architecture
-class TestCategory(APITestCase):
-    def test_b(self):
-        assert 1 == 1
-#>>> Works
-"""
-
-""" Proof of concept authentication
-from rest_framework.test import APIClient
-@pytest.mark.django_db
-def test_book_infos_view():
-    sales_userA = User(
-        username = 'user_for_testA',
-        password = 'user_for_testA',
-        team = 'SALES',
-    )
-    sales_userA.save()
-
-    AppClient.objects.create(
-        companyName = 'test_company',
-        dateCreated = '2022-11-28T14:55:11Z',
-        dateUpdated = '2022-11-28T14:55:11Z',
-        salesContact_id = sales_userA,
-    )
-
-    user = User.objects.get(username='user_for_testA')
-    client = APIClient()
-    client.force_authenticate(user=user)
-
-    response = client.get('/api/clients/')
-    content = response.content.decode()
-    print(content)
-#>>> Works
+TO BE DONE : refactorisation (try with fixtures)
 """
 
 
@@ -54,7 +22,7 @@ class ClientTests(APITestCase):
     def test_client_a_sales_member_can_create(self):
         """Tests if an User from SALES team can create a Client object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -62,7 +30,7 @@ class ClientTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -96,7 +64,7 @@ class ClientTests(APITestCase):
         """Tests if an User from SALES team can read a Client object
         The user needs to create a Client before reading it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -104,7 +72,7 @@ class ClientTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -133,9 +101,9 @@ class ClientTests(APITestCase):
 
     def test_client_a_sales_member_can_update_a_client_he_is_associated_with(self):
         """Tests if an User from SALES team can update a Client object
-        The user needs to create a Client before update it"""
+        The user needs to create a Client before updating it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -143,7 +111,7 @@ class ClientTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -174,10 +142,10 @@ class ClientTests(APITestCase):
         self.assertEqual(AppClient.objects.get(email='updated_email@mail.com').companyName, "test_company_updated")
 
     def test_client_a_sales_member_can_not_update_a_client_he_is_not_associated_with(self):
-        """Tests if an User from SALES team can not update a Client object he is not associated with
-        Another user creates a Client before"""
+        """Tests if an User from SALES team can not update a Client object he/she is not associated with.
+        Another SALES user creates a Client before"""
 
-        # Creation of two User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -192,8 +160,7 @@ class ClientTests(APITestCase):
             )
         sales_user_B.save()
 
-
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -210,7 +177,7 @@ class ClientTests(APITestCase):
         # ID of the first object in AppClient.objects.all() queryset 
         tested_AppClient_object_id = AppClient.objects.all()[0].id
 
-        # Django API client for sales_user_B
+        # Django API client
         client_sales_user_B = APIClient()
         client_sales_user_B.force_authenticate(user=sales_user_B)
 
@@ -231,10 +198,10 @@ class ClientTests(APITestCase):
         self.assertEqual(response.content.decode(), expected_content)
 
     def test_client_a_sales_member_can_not_delete(self):
-        """Tests if an User from SALES team can delete a Client object
+        """Tests if an User from SALES team can delete a Client object.
         The user needs to create a Client before triyng to delete it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -242,7 +209,7 @@ class ClientTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -268,7 +235,7 @@ class ClientTests(APITestCase):
     def test_client_a_support_member_can_not_create(self):
         """Tests if an User from SUPPORT team can not create a Client object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         support_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -276,7 +243,7 @@ class ClientTests(APITestCase):
             )
         support_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_A = APIClient()
         client_support_user_A.force_authenticate(user=support_user_A)
 
@@ -290,7 +257,7 @@ class ClientTests(APITestCase):
             'salesContact_id' : support_user_A.id,
         }
 
-        # The User from SALES team creates a Client object
+        # The User from SUPPORT team tries to create a Client object
         response = client_support_user_A.post('/api/clients/', data)
 
         expected_content = {"detail":"You are not allowed to do this action, see permissions.py / ClientsPermission"}
@@ -300,11 +267,10 @@ class ClientTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_client_a_support_member_can_read_as_he_is_the_SupportContact_of_the_client_event(self):
-        """Tests if an User from SUPPORT team can read a Client object
-        A Client, a Contract and an Event must be created before the support asks to read the client object"""
+        """Tests if an User from SUPPORT team can read a Client object as he/she is SupportContact of the client event.
+        A Client, a Contract and an Event must be created before the SUPPORT member asks to read the client object"""
 
-        # USERS
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -312,7 +278,6 @@ class ClientTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -320,7 +285,7 @@ class ClientTests(APITestCase):
             )
         support_user_B.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -370,24 +335,12 @@ class ClientTests(APITestCase):
         client_sales_user_A.post('/api/events/', event_object_data)
 
         # SUPPORT USER READS EVENT OBJECT 
-        # Django API client for support_user_B
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
-        # The User from SALES team reads the Client object
+        # The User from SUPPORT team reads the Client object
         response = client_support_user_B.get('/api/clients/')
-
-        # ID of the first object in Event.objects.all() queryset 
-        #tested_Event_object_id = Event.objects.all()[0].id
-
-        #expected_content = [{'id': tested_Event_object_id,
-        #    'dateCreated': '2022-11-28T14:55:11Z',
-        #    'dateUpdated': '2022-11-28T14:55:11Z',
-        #    'supportContact': support_user_B.id,
-        #    'eventStatus': tested_Contract_object_id,
-        #    'attendees': 1,
-        #    'eventDate': '2022-11-28T14:55:11Z',
-        #    'notes': ''}]
 
         expected_content = [{'id': tested_AppClient_object_id, 'firstName': '', 'lastName': '', 'email': '', 'phone': '',
         'mobile': '', 'companyName': 'test_company', 'dateCreated': '2022-11-28T14:55:11Z',
@@ -397,11 +350,10 @@ class ClientTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_client_a_support_member_can_not_read_as_he_is_not_the_SupportContact_of_the_client_event(self):
-        """Tests if an User from SUPPORT team can read a Client object
-        A Client, a Contract and an Event must be created before the support asks to read the client object"""
+        """Tests if an User from SUPPORT team can not read a Client object as he/she is not SupportContact of the client event.
+        A Client, a Contract and an Event must be created before the SUPPORT member asks to read the client object"""
 
-        # USERS
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -409,7 +361,6 @@ class ClientTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -417,7 +368,6 @@ class ClientTests(APITestCase):
             )
         support_user_B.save()
 
-        # Creation of a User object
         support_user_C = User(
                 username = 'user_for_testC',
                 password = 'user_for_testC',
@@ -425,7 +375,7 @@ class ClientTests(APITestCase):
             )
         support_user_C.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -475,11 +425,11 @@ class ClientTests(APITestCase):
         client_sales_user_A.post('/api/events/', event_object_data)
 
         # SUPPORT USER CAN NOT READ EVENT OBJECT 
-        # Django API client for support_user_C
+        # Django API client
         client_support_user_C = APIClient()
         client_support_user_C.force_authenticate(user=support_user_C)
 
-        # The User from SALES team reads the Client object
+        # The User from SUPPORT team tries to read the Client object
         response = client_support_user_C.get('/api/clients/')
         expected_content = []
         self.assertEqual(response.status_code, 200)
@@ -494,10 +444,10 @@ class ClientTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_client_a_support_member_can_not_update_a_client(self):
-        """Tests if an User from SUPPORT team can not update a Client object
-        Another user creates a Client before"""
+        """Tests if an User from SUPPORT team can not update a Client object.
+        A SALES member creates a Client before"""
 
-        # Creation of two User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -511,7 +461,6 @@ class ClientTests(APITestCase):
                 team = 'SUPPORT',
             )
         support_user_B.save()
-
 
         # Django API client for sales_user_A
         client_sales_user_A = APIClient()
@@ -530,11 +479,11 @@ class ClientTests(APITestCase):
         # ID of the first object in AppClient.objects.all() queryset 
         tested_AppClient_object_id = AppClient.objects.all()[0].id
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
-        # The User from SALES team updates the Client object
+        # The User from SUPPORT team tries to update the Client object
         updated_data = {'email': 'updated_email@mail.com',
             'companyName' : 'test_company_updated',
             'dateCreated' : '2022-11-28T14:55:11Z',
@@ -551,10 +500,10 @@ class ClientTests(APITestCase):
         self.assertEqual(response.content.decode(), expected_content)
 
     def test_client_a_support_member_can_not_delete(self):
-        """Tests if an User from SUPPORT team can delete a Client object
-        Another user creates a Client before"""
+        """Tests if an User from SUPPORT team can not delete a Client object.
+        A SALES member creates a Client before"""
 
-        # Creation of two User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -568,7 +517,6 @@ class ClientTests(APITestCase):
                 team = 'SUPPORT',
             )
         support_user_B.save()
-
 
         # Django API client for sales_user_A
         client_sales_user_A = APIClient()
@@ -587,7 +535,7 @@ class ClientTests(APITestCase):
         # ID of the first object in AppClient.objects.all() queryset 
         tested_AppClient_object_id = AppClient.objects.all()[0].id
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
@@ -602,7 +550,7 @@ class ContractTests(APITestCase):
     def test_contract_a_sales_member_can_create(self):
         """Tests if an User from SALES team can create a Contract object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -610,7 +558,7 @@ class ContractTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -663,10 +611,10 @@ class ContractTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_contract_a_sales_member_can_read(self):
-        """Tests if an User from SALES team can read a Contract object
+        """Tests if an User from SALES team can read a Contract object.
         The user needs to create a Client and a Contract before reading it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -674,7 +622,7 @@ class ContractTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -729,10 +677,10 @@ class ContractTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_contract_a_sales_member_can_update_a_contract_of_a_client_he_is_associated_with(self):
-        """Tests if an User from SALES team can update a Contract object of a client he is associated with
+        """Tests if an User from SALES team can update a Contract object of a client he is associated with.
         The user needs to create a Client and a Contract before updating it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -740,7 +688,7 @@ class ContractTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -794,10 +742,10 @@ class ContractTests(APITestCase):
         self.assertEqual(Contract.objects.get(dateCreated='2022-11-28T14:55:11Z').status, True)
 
     def test_contract_a_sales_member_can_not_update_a_contract_of_a_client_he_is_not_associated_with(self):
-        """Tests if an User from SALES team can update a Contract object of a client he is not associated with
-        Another user needs to create a Client and a Contract before updating it"""
+        """Tests if an User from SALES team can not update a Contract object of a client he is not associated with
+        Another SALES member needs to create a Client and a Contract before updating it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -812,7 +760,7 @@ class ContractTests(APITestCase):
             )
         sales_user_B.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -850,7 +798,7 @@ class ContractTests(APITestCase):
         # ID of the first object in Contract.objects.all() queryset 
         tested_Contract_object_id = Contract.objects.all()[0].id
 
-        # Django API client for sales_user_B
+        # Django API client
         client_sales_user_B = APIClient()
         client_sales_user_B.force_authenticate(user=sales_user_B)
 
@@ -873,10 +821,10 @@ class ContractTests(APITestCase):
         self.assertEqual(response.content.decode(), expected_content)
 
     def test_contract_a_sales_member_can_not_delete(self):
-        """Tests if an User from SALES team can delete a Contract object
+        """Tests if an User from SALES team can not delete a Contract object.
         The user needs to create a Client and a Contract before triyng to delete it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -884,7 +832,7 @@ class ContractTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -929,10 +877,10 @@ class ContractTests(APITestCase):
         self.assertTrue(AppClient.objects.exists())
 
     def test_contract_a_support_member_can_not_create(self):
-        """Tests if an User from SUPPORT team can not create a Contract object
-        A sales member create a client before the support users tries to create a contract"""
+        """Tests if an User from SUPPORT team can not create a Contract object.
+        A sales member create a client before the SUPPORT member tries to create a contract"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -940,7 +888,6 @@ class ContractTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -948,7 +895,7 @@ class ContractTests(APITestCase):
             )
         support_user_B.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -966,7 +913,7 @@ class ContractTests(APITestCase):
         # ID of the first object in AppClient.objects.all() queryset 
         tested_AppClient_object_id = AppClient.objects.all()[0].id
 
-        # Django API client for support_user_B
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
@@ -983,7 +930,7 @@ class ContractTests(APITestCase):
             'paymentDue' : '2022-11-28T14:55:11Z',
         }
 
-        # The User from SALES team creates a Client object
+        # The User from SALES team tries to create a Contract object
         response = client_support_user_B.post('/api/contracts/', contract_object_data)
 
         expected_content = {"detail":"You are not allowed to do this action, see permissions.py / ContractsPermission"}
@@ -993,10 +940,10 @@ class ContractTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_contract_a_support_member_can_read(self):
-        """Tests if an User from SALES team can read a Contract object
+        """Tests if an User from SALES team can read a Contract object.
         A Sales member must create a Client and a Contract before the support user reads it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1004,7 +951,6 @@ class ContractTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1012,7 +958,7 @@ class ContractTests(APITestCase):
             )
         support_user_B.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1050,7 +996,7 @@ class ContractTests(APITestCase):
         # ID of the first object in Contract.objects.all() queryset 
         tested_Contract_object_id = Contract.objects.all()[0].id
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
@@ -1071,10 +1017,10 @@ class ContractTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_contract_a_support_member_can_not_update(self):
-        """Tests if an User from SALES team can update a Contract object of a client he is not associated with
+        """Tests if an User from SUPPORT team can not update a Contract object of a client he is not associated with
         Another user needs to create a Client and a Contract before updating it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1089,7 +1035,7 @@ class ContractTests(APITestCase):
             )
         support_user_B.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1127,11 +1073,11 @@ class ContractTests(APITestCase):
         # ID of the first object in Contract.objects.all() queryset 
         tested_Contract_object_id = Contract.objects.all()[0].id
 
-        # Django API client for sales_user_B
+        # Django API client
         client_sales_user_B = APIClient()
         client_sales_user_B.force_authenticate(user=support_user_B)
 
-        # The User from SALES team updates the Contract  object
+        # The User from SUPPORT team updates the Contract  object
         updated_data = {'salesContact' : sales_user_A.id,
             'client' : tested_AppClient_object_id,
             'dateCreated' : '2022-11-28T14:55:11Z',
@@ -1150,10 +1096,10 @@ class ContractTests(APITestCase):
         self.assertEqual(response.content.decode(), expected_content)
 
     def test_contract_a_support_member_can_not_delete(self):
-        """Tests if an User from SUPPORT team can delete a Contract object
-        A Sales user needs to create a Client and a Contract before the Support user tries deleting it"""
+        """Tests if an User from SUPPORT team can not delete a Contract object.
+        A SALES member needs to create a Client and a Contract before the Support user tries deleting it"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1168,7 +1114,7 @@ class ContractTests(APITestCase):
             )
         support_user_B.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1206,11 +1152,11 @@ class ContractTests(APITestCase):
         # ID of the first object in Contract.objects.all() queryset 
         tested_Contract_object_id = Contract.objects.all()[0].id
 
-        # Django API client for support_user_B
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
-        # The User from SALES team tries to delete the Client object
+        # The User from SUPPORT team tries to delete the Client object
         response = client_support_user_B.delete('/api/contracts/{0}/'.format(tested_Contract_object_id))
 
         self.assertEqual(response.status_code, 403)
@@ -1221,7 +1167,7 @@ class EventTests(APITestCase):
     def test_event_a_sales_member_can_create(self):
         """Tests if an User from SALES team can create an Event object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1229,7 +1175,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1238,7 +1183,7 @@ class EventTests(APITestCase):
         support_user_B.save()
 
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1291,7 +1236,7 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         response = client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
         expected_content = {'id' : tested_Event_object_id,
@@ -1309,9 +1254,9 @@ class EventTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_event_a_sales_member_can_read(self):
-        """Tests if an User from SALES team can create an Event object"""
+        """Tests if an User from SALES team can read an Event object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1319,7 +1264,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1328,7 +1272,7 @@ class EventTests(APITestCase):
         support_user_B.save()
 
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1378,7 +1322,7 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         response = client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
         expected_content = {'id' : tested_Event_object_id,
@@ -1408,9 +1352,9 @@ class EventTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_event_a_sales_member_can_update_an_event_related_to_a_contract_of_a_client_he_is_associated_with(self):
-        """Tests if an User from SALES team can update an Event object"""
+        """Tests if an User from SALES team can update an Event object it is associated via the Contract and Client"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1418,7 +1362,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1427,7 +1370,7 @@ class EventTests(APITestCase):
         support_user_B.save()
 
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1477,10 +1420,10 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
-        # The User from SALES team updates the Contract  object
+        # The User from SALES team updates the Event object
         updated_data = {'dateCreated' : '2022-11-28T14:55:11Z',
             'dateUpdated' : '2022-11-28T14:55:11Z',
             'supportContact' : support_user_B.id,
@@ -1496,9 +1439,9 @@ class EventTests(APITestCase):
         self.assertEqual(Event.objects.get(eventStatus=tested_Contract_object_id).attendees, 11)
 
     def test_event_a_sales_member_can_not_update_an_event_related_to_a_contract_of_a_client_he_is_not_associated_with(self):
-        """Tests if an User from SALES team can update an Event object"""
+        """Tests if an User from SALES team can not update an Event object it is not associated via the Contract and Client"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1506,7 +1449,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1514,7 +1456,6 @@ class EventTests(APITestCase):
             )
         support_user_B.save()
 
-        # Creation of a User object
         sales_user_C = User(
                 username = 'user_for_testC',
                 password = 'user_for_testC',
@@ -1522,7 +1463,7 @@ class EventTests(APITestCase):
             )
         sales_user_C.save()
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1572,14 +1513,14 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_C = APIClient()
         client_sales_user_C.force_authenticate(user=sales_user_C)
 
-        # The User from SALES team updates the Contract  object
+        # The User from SALES team updates the Event  object
         updated_data = {'dateCreated' : '2022-11-28T14:55:11Z',
             'dateUpdated' : '2022-11-28T14:55:11Z',
             'supportContact' : support_user_B.id,
@@ -1598,9 +1539,9 @@ class EventTests(APITestCase):
         self.assertEqual(response.content.decode(), expected_content)
 
     def test_event_a_sales_member_can_not_delete(self):
-        """Tests if an User from SALES team can create an Event object"""
+        """Tests if an User from SALES team can not delete an Event object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1608,7 +1549,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1616,8 +1556,7 @@ class EventTests(APITestCase):
             )
         support_user_B.save()
 
-
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1667,19 +1606,19 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         response = client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
-        # The User from SALES team tries to delete the Client object
+        # The User from SALES team tries to delete the Event object
         response = client_sales_user_A.delete('/api/events/{0}/'.format(tested_Event_object_id))
 
         self.assertEqual(response.status_code, 403)
         self.assertTrue(Event.objects.exists())
 
     def test_event_a_support_member_can_not_create(self):
-        """Tests if an User from SALES team can create an Event object"""
+        """Tests if an User from SUPPORT team can create an Event object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1687,7 +1626,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1696,7 +1634,7 @@ class EventTests(APITestCase):
         support_user_B.save()
 
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1746,11 +1684,11 @@ class EventTests(APITestCase):
             'notes' : '',
         }
 
-        # Django API client for support_user_B
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
-        # The User from SALES team creates a Client object
+        # The User from SALES team tries to create a Event object
         response = client_support_user_B.post('/api/events/', event_object_data)
 
         expected_content = {"detail":"You are not allowed to do this action, see permissions.py / EventsPermission"}
@@ -1760,9 +1698,9 @@ class EventTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_event_a_support_member_can_read(self):
-        """Tests if an User from SALES team can create an Event object"""
+        """Tests if an User from SUPPORT team can read an Event object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1770,7 +1708,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1778,8 +1715,7 @@ class EventTests(APITestCase):
             )
         support_user_B.save()
 
-
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1829,7 +1765,7 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         response = client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
         expected_content = {'id' : tested_Event_object_id,
@@ -1842,7 +1778,7 @@ class EventTests(APITestCase):
             'notes' : '',
         }
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
@@ -1863,9 +1799,9 @@ class EventTests(APITestCase):
         self.assertEqual(response.json(), expected_content)
 
     def test_event_a_support_member_can_update_an_event_if_he_is_the_contract_supportContact(self):
-        """Tests if an User from SALES team can update an Event object"""
+        """Tests if an User from SUPPORT team can update an Event object he.she is the support contact"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1873,7 +1809,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1881,8 +1816,7 @@ class EventTests(APITestCase):
             )
         support_user_B.save()
 
-
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -1932,10 +1866,10 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
-        # The User from SALES team updates the Contract  object
+        # The User from SUPPORT team updates the Event  object
         updated_data = {'dateCreated' : '2022-11-28T14:55:11Z',
             'dateUpdated' : '2022-11-28T14:55:11Z',
             'supportContact' : support_user_B.id,
@@ -1945,7 +1879,7 @@ class EventTests(APITestCase):
             'notes' : '',
         }
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
@@ -1955,10 +1889,9 @@ class EventTests(APITestCase):
         self.assertEqual(Event.objects.get(eventStatus=tested_Contract_object_id).attendees, 11)
 
     def test_event_a_support_member_can_not_update_an_event_if_he_is_not_the_contract_supportContact(self):
+        """Tests if an User from SUPPORT team can not update an Event object he.she is not the support contact"""
 
-        """Tests if an User from SALES team can update an Event object"""
-
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -1966,7 +1899,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -1974,7 +1906,6 @@ class EventTests(APITestCase):
             )
         support_user_B.save()
 
-        # Creation of a User object
         support_user_C = User(
                 username = 'user_for_testC',
                 password = 'user_for_testC',
@@ -1982,8 +1913,7 @@ class EventTests(APITestCase):
             )
         support_user_C.save()
 
-
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -2033,10 +1963,10 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
-        # The User from SALES team updates the Contract  object
+        # The User from SUPPORT team updates the Contract  object
         updated_data = {'dateCreated' : '2022-11-28T14:55:11Z',
             'dateUpdated' : '2022-11-28T14:55:11Z',
             'supportContact' : support_user_B.id,
@@ -2046,7 +1976,7 @@ class EventTests(APITestCase):
             'notes' : '',
         }
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_C = APIClient()
         client_support_user_C.force_authenticate(user=support_user_C)
 
@@ -2059,9 +1989,9 @@ class EventTests(APITestCase):
         self.assertEqual(response.content.decode(), expected_content)
 
     def test_event_a_support_member_can_not_delete(self):
-        """Tests if an User from SALES team can create an Event object"""
+        """Tests if an User from SALES team can not delete an Event object"""
 
-        # Creation of a User object
+        # Creation User object(s)
         sales_user_A = User(
                 username = 'user_for_testA',
                 password = 'user_for_testA',
@@ -2069,7 +1999,6 @@ class EventTests(APITestCase):
             )
         sales_user_A.save()
 
-        # Creation of a User object
         support_user_B = User(
                 username = 'user_for_testB',
                 password = 'user_for_testB',
@@ -2078,7 +2007,7 @@ class EventTests(APITestCase):
         support_user_B.save()
 
 
-        # Django API client for sales_user_A
+        # Django API client
         client_sales_user_A = APIClient()
         client_sales_user_A.force_authenticate(user=sales_user_A)
 
@@ -2128,10 +2057,10 @@ class EventTests(APITestCase):
         # The User from SALES team creates an Event object
         response = client_sales_user_A.post('/api/events/', event_object_data)
 
-        # ID of the first object in Contract.objects.all() queryset 
+        # ID of the first object in Event.objects.all() queryset 
         tested_Event_object_id = Event.objects.all()[0].id
 
-        # Django API client for sales_user_A
+        # Django API client
         client_support_user_B = APIClient()
         client_support_user_B.force_authenticate(user=support_user_B)
 
